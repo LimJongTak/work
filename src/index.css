@@ -1,0 +1,44 @@
+@import url("https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
+}
+
+/* 게시글 본문(텍스트 글)에서 기본 마크업이 보이도록 */
+.prose-basic h1 {
+  @apply text-2xl font-bold mt-4 mb-2;
+}
+.prose-basic h2 {
+  @apply text-xl font-bold mt-3 mb-2;
+}
+.prose-basic h3 {
+  @apply text-lg font-semibold mt-3 mb-1;
+}
+.prose-basic p {
+  @apply my-2 leading-relaxed;
+}
+.prose-basic ul {
+  @apply list-disc pl-6 my-2;
+}
+.prose-basic ol {
+  @apply list-decimal pl-6 my-2;
+}
+.prose-basic a {
+  @apply text-brand-600 underline;
+}
+.prose-basic code {
+  @apply bg-slate-100 px-1 py-0.5 rounded text-sm dark:bg-slate-800;
+}
+.prose-basic pre {
+  @apply bg-slate-900 text-slate-100 p-4 rounded-lg overflow-x-auto my-3 text-sm;
+}

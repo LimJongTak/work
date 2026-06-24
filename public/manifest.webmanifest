@@ -1,0 +1,18 @@
+{
+  "name": "업무 게시판",
+  "short_name": "업무게시판",
+  "description": "로그인 기반 사내 업무용 게시판",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#3366ff",
+  "icons": [
+    {
+      "src": "/vite.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+rules_version = '2';
+
+// Firebase 콘솔 > Firestore Database > 규칙 에 붙여넣어 배포하세요.
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function profile() { return get(/databases/$(database)/documents/users/$(request.auth.uid)).data; }
+    function hasProfile() { return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)); }
+    function isAdmin() { return hasProfile() && profile().role == 'admin'; }
+    function isManager() { return hasProfile() && (profile().role == 'admin' || profile().role == 'manager'); }
+    // 승인된 회원(관리자는 항상 승인)
+    function isApproved() { return hasProfile() && (profile().role == 'admin' || profile().approved == true); }
+    // 등급 레벨 / 게시판 글쓰기 권한
+    function roleLevelOf(r) { return r == 'admin' ? 100 : (r == 'manager' ? 80 : (r == 'senior' ? 60 : (r == 'member' ? 40 : 20))); }
+    function myLevel() { return roleLevelOf(profile().role); }
+    function canWriteBoard(boardId) {
+      return !exists(/databases/$(database)/documents/boards/$(boardId))
+        || get(/databases/$(database)/documents/boards/$(boardId)).data.writeLevel == null
+        || myLevel() >= get(/databases/$(database)/documents/boards/$(boardId)).data.writeLevel;
+    }
+
+    // 사용자 프로필 — 로그인하면 읽기 가능(대기 화면 표시에 필요)
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      // 관리자는 등급/승인 변경 가능. 본인은 표시이름만(등급·승인 변경 불가)
+      allow update: if isAdmin()
+        || (request.auth.uid == userId
+            && request.resource.data.role == resource.data.role
+            && request.resource.data.approved == resource.data.approved);
+      allow delete: if isAdmin();
+    }
+
+    // 추천(초대) 코드 — 관리자 발급, 1회용 소진
+    match /inviteCodes/{code} {
+      allow read: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isSignedIn()
+        && resource.data.used == false
+        && request.resource.data.used == true
+        && request.resource.data.usedBy == request.auth.uid;
+      allow delete: if isAdmin();
+    }
+
+    // 게시판 — 승인 회원 읽기, 관리자만 관리
+    match /boards/{boardId} {
+      allow read: if isApproved();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 카테고리 — 승인 회원 읽기, 관리자만 관리
+    match /categories/{categoryId} {
+      allow read: if isApproved();
+      allow create, update, delete: if isAdmin();
+    }
+
+    // 게시글 — 승인 회원만 읽기/작성, 수정·삭제는 작성자/매니저
+    // 좋아요/조회수 카운트만 바꾸는 업데이트는 승인 회원 누구나 허용
+    match /posts/{postId} {
+      allow read: if isApproved();
+      allow create: if isApproved()
+        && request.resource.data.authorId == request.auth.uid
+        && canWriteBoard(request.resource.data.boardId);
+      allow update: if isManager()
+        || (isApproved() && resource.data.authorId == request.auth.uid)
+        || (isApproved() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'viewCount']))
+        || (isApproved() && request.auth.uid in resource.data.approverUids && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['approvals', 'status']));
+      allow delete: if isManager() || (isApproved() && resource.data.authorId == request.auth.uid);
+    }
+
+    // 좋아요 (문서 id = postId_uid)
+    match /likes/{likeId} {
+      allow read: if isApproved() && (resource == null || resource.data.uid == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isApproved() && resource.data.uid == request.auth.uid;
+    }
+
+    // 북마크 (문서 id = postId_uid)
+    match /bookmarks/{bmId} {
+      allow read: if isApproved() && (resource == null || resource.data.uid == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isApproved() && resource.data.uid == request.auth.uid;
+    }
+
+    // 알림 — 받는 사람만 읽기/수정, 승인 회원이 발송
+    match /notifications/{notifId} {
+      allow read, update, delete: if isSignedIn() && resource.data.toUid == request.auth.uid;
+      allow create: if isApproved() && request.resource.data.read == false;
+    }
+
+    // 활동 로그 — 관리자만 열람, 승인 회원이 기록(수정/삭제 불가)
+    match /activityLogs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isApproved() && request.resource.data.actorUid == request.auth.uid;
+    }
+
+    // 공문 문서번호 카운터 — 승인 회원이 증가(트랜잭션)
+    match /counters/{counterId} {
+      allow read, write: if isApproved();
+    }
+
+    // 게시글 신고 — 신고자/관리자 읽기, 승인 회원이 신고, 관리자가 처리
+    match /reports/{reportId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.reporterId == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.reporterId == request.auth.uid && request.resource.data.status == 'open';
+      allow update, delete: if isAdmin();
+    }
+
+    // 댓글 (대댓글 parentId 포함). 좋아요 카운트만 바꾸는 업데이트 허용
+    match /comments/{commentId} {
+      allow read: if isApproved();
+      allow create: if isApproved() && request.resource.data.authorId == request.auth.uid;
+      allow update: if isApproved() && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount']);
+      allow delete: if isManager() || (isApproved() && resource.data.authorId == request.auth.uid);
+    }
+
+    // 댓글 좋아요 (문서 id = commentId_uid)
+    match /commentLikes/{id} {
+      allow read: if isApproved() && (resource == null || resource.data.uid == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.uid == request.auth.uid;
+      allow delete: if isApproved() && resource.data.uid == request.auth.uid;
+    }
+
+    // 게시판/카테고리 개설 요청
+    match /requests/{requestId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.requesterId == request.auth.uid);
+      allow create: if isApproved() && request.resource.data.requesterId == request.auth.uid && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // 라이브톡(전체 채팅)
+    match /liveMessages/{messageId} {
+      allow read: if isApproved();
+      allow create: if isApproved() && request.resource.data.senderId == request.auth.uid;
+      allow delete: if isManager();
+    }
+
+    // 1:1 대화방
+    match /conversations/{convId} {
+      allow read: if isApproved() && request.auth.uid in resource.data.members;
+      allow create: if isApproved() && request.auth.uid in request.resource.data.members;
+      allow update: if isApproved() && request.auth.uid in resource.data.members;
+    }
+
+    // 1:1 메시지
+    match /directMessages/{messageId} {
+      allow read: if isApproved();
+      allow create: if isApproved() && request.resource.data.senderId == request.auth.uid;
+    }
+  }
+}
