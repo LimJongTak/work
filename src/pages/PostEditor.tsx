@@ -348,11 +348,17 @@ export default function PostEditor() {
         toast.show("게시글을 저장했습니다.", "success");
         navigate(`/post/${ref.id}`);
       }
-    } catch {
-      toast.show(
-        "저장에 실패했습니다. 권한 또는 네트워크를 확인해주세요.",
-        "error",
-      );
+    } catch (err) {
+      // 실제 원인을 콘솔에 남겨 진단 가능하게 하고, 권한 오류와 네트워크 오류를 구분해 안내합니다.
+      console.error("게시글 저장 실패:", err);
+      const code = (err as { code?: string }).code ?? "";
+      const message =
+        code === "permission-denied"
+          ? "저장 권한이 없습니다. 이 게시판의 글쓰기 등급을 확인해주세요."
+          : code === "unavailable" || code === "deadline-exceeded"
+            ? "네트워크 연결이 불안정합니다. 잠시 후 다시 시도해주세요."
+            : "저장에 실패했습니다. 권한 또는 네트워크를 확인해주세요.";
+      toast.show(message, "error");
     } finally {
       setBusy(false);
     }
