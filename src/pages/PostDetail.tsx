@@ -211,8 +211,8 @@ export default function PostDetail() {
 
       <div className="rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 p-6 shadow-sm sm:p-8">
         <div className="flex flex-wrap items-start justify-between gap-3 border-b border-slate-100 dark:border-slate-800 pb-4">
-          <div>
-            <h1 className="text-2xl font-bold text-slate-800 dark:text-slate-100">
+          <div className="min-w-0">
+            <h1 className="break-words text-xl font-bold text-slate-800 dark:text-slate-100 sm:text-2xl">
               {post.pinned && <span className="mr-1.5">📌</span>}
               {post.title}
             </h1>
@@ -248,7 +248,7 @@ export default function PostDetail() {
               </div>
             )}
           </div>
-          <div className="flex gap-2 print:hidden">
+          <div className="flex flex-wrap justify-end gap-2 print:hidden">
             <button
               onClick={() => window.print()}
               className="rounded-lg border border-slate-200 px-3 py-1.5 dark:border-slate-700 text-sm font-medium text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800"

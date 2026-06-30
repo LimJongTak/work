@@ -14,6 +14,16 @@ body {
   @apply bg-slate-50 text-slate-800 antialiased dark:bg-slate-950 dark:text-slate-100;
 }
 
+/* 모바일 가로 넘침 방지: 긴 URL·단어가 레이아웃을 밀어내지 않도록 줄바꿈 처리 */
+.prose-basic,
+.prose-basic p,
+.prose-basic li,
+.prose-basic a,
+.prose-basic code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 /* 게시글 본문(텍스트 글)에서 기본 마크업이 보이도록 */
 .prose-basic h1 {
   @apply text-2xl font-bold mt-4 mb-2;

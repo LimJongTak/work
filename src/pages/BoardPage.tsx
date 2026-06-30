@@ -310,8 +310,8 @@ export default function BoardPage() {
             : "게시된 글이 없습니다."}
         </div>
       ) : (
-        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
-          <table className="w-full text-left text-sm">
+        <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900">
+          <table className="w-full min-w-[34rem] text-left text-sm">
             <thead className="border-b border-slate-200 bg-slate-50 text-slate-500 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-400">
               <tr>
                 {isHtmlBoard && (

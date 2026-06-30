@@ -4,6 +4,11 @@ export default {
   content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      // 작은 휴대폰(360~480px)까지 세밀하게 대응하기 위한 추가 브레이크포인트.
+      // 기본 sm(640)/md(768)/lg(1024)/xl(1280) 앞에 xs(480) 를 둡니다.
+      screens: {
+        xs: "480px",
+      },
       colors: {
         brand: {
           50: "#eef4ff",
