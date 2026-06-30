@@ -191,6 +191,24 @@ export interface OpenRequest {
   rejectReason?: string;
 }
 
+/** 등급(역할) 상향 신청 — 회원이 더 높은 등급을 신청하고 관리자가 승인/반려 */
+export interface RoleRequest {
+  id: string;
+  requesterId: string;
+  requesterName: string;
+  /** 신청 당시 등급 */
+  currentRole: Role;
+  /** 신청한(원하는) 등급 */
+  desiredRole: Role;
+  /** 신청 사유(선택) */
+  reason?: string;
+  status: RequestStatus;
+  createdAt?: Timestamp;
+  decidedBy?: string;
+  decidedAt?: Timestamp;
+  rejectReason?: string;
+}
+
 /** 알림 */
 export type NotificationType = "comment" | "dm" | "request" | "like" | "mention";
 export interface AppNotification {

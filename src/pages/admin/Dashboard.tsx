@@ -71,6 +71,7 @@ const CARDS: { key: keyof Stats; label: string; icon: string }[] = [
   { key: "posts", label: "게시글", icon: "📝" },
   { key: "comments", label: "댓글", icon: "💬" },
   { key: "pendingRequests", label: "대기 요청", icon: "📥" },
+  { key: "pendingRoleRequests", label: "등급 신청", icon: "📈" },
 ];
 
 export default function AdminDashboard() {
@@ -116,7 +117,7 @@ export default function AdminDashboard() {
       </div>
 
       {/* 통계 카드 */}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
         {CARDS.map((c) => (
           <div
             key={c.key}

@@ -100,6 +100,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         <span className="text-lg">📝</span>
         <span>게시판 요청</span>
       </NavLink>
+      <NavLink to="/role-requests" className={linkClass} onClick={onNavigate}>
+        <span className="text-lg">📈</span>
+        <span>등급 신청</span>
+      </NavLink>
       <NavLink to="/settings" className={linkClass} onClick={onNavigate}>
         <span className="text-lg">⚙️</span>
         <span>설정</span>
@@ -130,6 +134,10 @@ export default function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
           <NavLink to="/requests" className={linkClass} onClick={onNavigate}>
             <span className="text-lg">📥</span>
             <span>요청 승인</span>
+          </NavLink>
+          <NavLink to="/role-requests" className={linkClass} onClick={onNavigate}>
+            <span className="text-lg">🎖️</span>
+            <span>등급 신청 관리</span>
           </NavLink>
         </>
       )}

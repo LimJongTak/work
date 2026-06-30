@@ -127,6 +127,15 @@ service cloud.firestore {
       allow delete: if isApproved() && resource.data.uid == request.auth.uid;
     }
 
+    // 등급(역할) 상향 신청 — 신청자/관리자 읽기, 승인 회원이 신청, 관리자가 처리
+    match /roleRequests/{reqId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.requesterId == request.auth.uid);
+      allow create: if isApproved()
+        && request.resource.data.requesterId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
     // 게시판/카테고리 개설 요청
     match /requests/{requestId} {
       allow read: if isAdmin() || (isSignedIn() && resource.data.requesterId == request.auth.uid);

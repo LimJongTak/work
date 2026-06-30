@@ -17,6 +17,7 @@ import AdminReports from "./pages/admin/Reports";
 import SetupNotice from "./pages/SetupNotice";
 import Search from "./pages/Search";
 import Requests from "./pages/Requests";
+import RoleRequests from "./pages/RoleRequests";
 import LiveTalk from "./pages/LiveTalk";
 import Messages from "./pages/Messages";
 import Bookmarks from "./pages/Bookmarks";
@@ -49,6 +50,7 @@ export default function App() {
         <Route path="/" element={<Home />} />
         <Route path="/search" element={<Search />} />
         <Route path="/requests" element={<Requests />} />
+        <Route path="/role-requests" element={<RoleRequests />} />
         <Route path="/live" element={<LiveTalk />} />
         <Route path="/messages" element={<Messages />} />
         <Route path="/bookmarks" element={<Bookmarks />} />
