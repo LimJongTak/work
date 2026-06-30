@@ -15,10 +15,14 @@ service cloud.firestore {
     // associate 만 20, 그 외 미인식 값은 member 로 보정해 클라이언트와 권한 판정을 일치시킨다.
     function roleLevelOf(r) { return r == 'admin' ? 100 : (r == 'manager' ? 80 : (r == 'senior' ? 60 : (r == 'associate' ? 20 : 40))); }
     function myLevel() { return roleLevelOf(profile().role); }
+    // writeLevel 필드가 아예 없는(과거/콘솔 생성) 보드 문서도 허용해야 한다.
+    // Firestore 규칙에서 없는 필드 접근(.writeLevel)은 null 이 아니라 "에러"라서
+    // `== null` 가드가 작동하지 않고 평가 전체가 거부된다 → admin 까지 글쓰기 불가.
+    // .get('writeLevel', 0) 으로 없는 필드를 0(제한 없음)으로 안전하게 보정한다.
     function canWriteBoard(boardId) {
       return !exists(/databases/$(database)/documents/boards/$(boardId))
-        || get(/databases/$(database)/documents/boards/$(boardId)).data.writeLevel == null
-        || myLevel() >= get(/databases/$(database)/documents/boards/$(boardId)).data.writeLevel;
+        || get(/databases/$(database)/documents/boards/$(boardId)).data.get('writeLevel', 0) == null
+        || myLevel() >= get(/databases/$(database)/documents/boards/$(boardId)).data.get('writeLevel', 0);
     }
 
     // 사용자 프로필 — 로그인하면 읽기 가능(대기 화면 표시에 필요)
